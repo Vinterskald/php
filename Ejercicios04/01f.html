@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<!--
+	3- Crear el fichero 01f.html donde se defina un formulario que incluya diversos controles html 5 
+	y que sea procesado por el archivo 01f.php que mostrará mediante la función print_r($_REQUEST) y 
+	var_dump($_REQUEST) la lista de todos los valores recibidos.  
+-->
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Ejercicio 3 (4)</title>
+		<style>
+			#main{
+				text-align: center;
+			}
+			input{
+				margin: 2px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="main">
+			<h1>Formularios con controles HTML5</h1>
+			<form name="form3" action="01f.php" method="POST">
+				<label>Número 1: <input type="number" name="num1"/></label>
+				<br>
+				<label>Número 2: <input type="range" name="num2" min="10" max="100"/></label>
+				<br>
+				<label>Estaciones:<input list="estaciones"/></label>		
+				<datalist id="estaciones">
+					<option value="Invierno"/>
+					<option value="Otoño"/>
+					<option value="Primavera"/>
+					<option value="Verano"/>
+				</datalist>
+				<br>
+				<label>Color favorito: <input type="color" name="color"/></label>
+				<br>
+				<label>Buscar: <input type="search" name="buscar" placeholder="Busca alguna cosa..."/></label>
+				<br>
+				<label>Nombre: <input type="text" name="nombre"/></label>
+				<br>
+				<label>Apellido: <input type="text" name="apellido"/></label>
+				<br>
+				<label>E-Mail: <input type="email" name="correo" placeholder="ejemplo@correo.dom"/></label>
+				<br>
+				<label>Fecha de nacimiento: <input type="date" name="fecha"/></label>
+				<br>
+				<label>Edad (de 0 a 150): <input type="number" name="edad" min="0" max="150"/></label>
+				<br>
+				<label>Página personal: <input type="url"/></label>
+				<br>
+				<label>Horario: De <input type="time"> a <input type="time"/></label>
+				<br><br>
+				<input type="submit" name="enviar" value="Enviar consulta">
+			</form>
+		</div>
+	</body>
+</html>
