@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8"/>
 		<title>Subida de fichero al servidor Web</title>
-		<meta name="author" content="V√≠ctor Viloria Iberti, 2¬∫ DAW"/>
+		<meta name="author" content="VÌctor Viloria Iberti, 2∫ DAW"/>
 		<style>
 			#principal{
 				text-align: center;
@@ -13,121 +13,135 @@
 	<body>
 		<?php
             if($_SERVER['REQUEST_METHOD'] == "POST" || isset($_REQUEST["subir"])){
-                if(empty($_FILES["img1"]["name"][0])){
-                    if(!empty($_FILES["img2"]["name"][0])){
-                        echo "La opci√≥n de segunda imagen es opcional; si quieres subir solo una, usa la primera opci√≥n.<br><br>";
-                    }else{
-                        echo "No has subido ninguna imagen.<br><br>";
-                    }       
-                    echo "<a href=''>Ir a formulario.</a>";
+                // Posibles errores de subida
+                $codigosErrorSubida= [
+                0 => 'Subida correcta',
+                1 => 'El tamaÒo del archivo excede el admitido por el servidor',  // directiva upload_max_filesize en php.ini
+                2 => 'El tamaÒo del archivo excede el admitido por el cliente',  // directiva MAX_FILE_SIZE en el formulario HTML
+                3 => 'El archivo no se pudo subir completamente',
+                4 => 'No se seleccionÛ ning˙n archivo para ser subido',
+                6 => 'No existe un directorio temporal donde subir el archivo',
+                7 => 'No se pudo guardar el archivo en disco',  // permisos
+                8 => 'Una extensiÛn PHP evito la subida del archivo'  // extensiÛn PHP
+                ];
+                $mensaje = '';
+                
+                // si no se reciben el directorio de alojamiento y el archivo, se descarta el proceso
+                if((!isset($_FILES['img1']['name']))){
+                    $mensaje .= 'ERROR: No has indicado una Imagen 1 para subir; si quieres subir solo una imagen, usa esta opciÛn.';
                 }else{
-                    //Directorio predefinido.
-                    $directorioSubida = "./imgusers/";
-                    //Datos de Imagen 1:
+                    // se reciben el directorio de alojamiento y el archivo
+                    $directorioSubida = "./imgusers/"; // debe permitir la escritua para Apache
+                    // InformaciÛn sobre el archivo subido
                     $nombreImg1 = $_FILES['img1']['name'];
                     $tipoImg1 = $_FILES['img1']['type'];
                     $tamanioImg1 = $_FILES['img1']['size'];
                     $temporalImg1 = $_FILES['img1']['tmp_name'];
+                    $errorImg1 = $_FILES['img1']['error'];
                     
-                    echo 'Intentando subir el archivo: <br>';
-                    echo "- Nombre: $nombreImg1 <br>";
-                    echo '- Tama√±o: '.($tamanioImg1 / 1024).'KB <br>';
-                    echo "- Tipo: $tipoImg1<br>";
-                    echo "- Nombre archivo temporal: $temporalImg1 <br>";
+                    $mensaje .= 'Intentando subir Imagen 1: ' . ' <br />';
+                    $mensaje .= "- Nombre: $nombreImg1" . ' <br />';
+                    $mensaje .= '- TamaÒo: ' . ($tamanioImg1 / 1024) . ' KB <br />';
+                    $mensaje .= "- Tipo: $tipoImg1" . ' <br />' ;
+                    $mensaje .= "- Nombre archivo temporal: $temporalImg1" . ' <br />';
+                    $mensaje .= "- CÛdigo de estado: $errorImg1" . ' <br />';
                     
-                    echo '<br>RESULTADO<br>';
+                    $mensaje .= '<br />RESULTADO<br />';
                     
-                    if(is_writable($directorioSubida)){
-                        //Intenta subir Imagen 1:
-                        if(file_exists('./imgusers/'.pathinfo($nombreImg1, PATHINFO_FILENAME))){
-                            echo "ERROR Imagen 1: El archivo ya existe en el directorio de subidas.<br><br>";
-                            echo "<a href=''>Volver a formulario.</a>";
-                            exit();
+                    // Obtengo el cÛdigo de error de la operaciÛn, 0 si todo ha ido bien
+                    if($errorImg1 > 0) {
+                        $mensaje .= "Se a producido el error: $errorImg1:"
+                        . $codigosErrorSubida[$errorImg1] . ' <br />';
+                    }else{ 
+                        // subida correcta del temporal
+                        //Compruebo el tipo de archivo y su tamaÒo:
+                        $ext1 = strtolower(pathinfo($nombreImg1, PATHINFO_EXTENSION));
+                        if($ext1 != "jpg" || $ext1 != "png"){
+                            $mensaje .= "ERROR: El archivo de Imagen 1 no es v·lido. <br>"; 
                         }else{
-                            $ext = strtolower(pathinfo($nombreImg1, PATHINFO_EXTENSION));
-                            if($ext != "jpg" || $ext != "png"){
-                                echo "ERROR Imagen 1: El tipo de archivo no es correcto. <br><br>";
-                                echo "<a href=''>Volver al formulario.</a>";
-                                exit();
+                            if($tamanioImg1 > 200000){
+                                $mensaje .= "ERROR: El archivo que quieres subir supera el m·ximo individual permitido. <br>";
                             }else{
-                                if($tamanioImg1 > 200000){
-                                    echo "ERROR Imagen 1: El tama√±o del archivo supera el m√°ximo permitido.";
-                                    echo "<a href=''>Volver al formulario.</a>";
-                                    exit();
-                                }else{
-                                    echo "Subiendo Imagen 1...";
-                                    if(move_uploaded_file($temporalImg1, $directorioSubida.'/'.$nombreImg1) == true){
-                                        echo 'Archivo guardado en: '.$directorioSubida.'/'.$nombreImg1.'<br>';
+                                // si es un directorio y tengo permisos
+                                if(is_dir($directorioSubida) && is_writable ($directorioSubida)) {
+                                    //Intento mover el archivo temporal al directorio indicado
+                                    if (move_uploaded_file($temporalImg1,  $directorioSubida .'/'. $nombreImg1) == true) {
+                                        $mensaje .= 'Archivo guardado en: ' . $directorioSubida .'/'. $nombreImg1 . ' <br />';
                                     }else{
-                                        echo 'ERROR: Archivo no guardado correctamente <br>';
-                                        echo "<a href=''>Volver al formulario.</a>";
-                                        exit();
+                                        $mensaje .= 'ERROR: Archivo no guardado correctamente <br />';
                                     }
-                                }
-                            }
-                        }
-                        //-----------------------------------------------------------------------                     
-                        if(is_uploaded_file($_FILES["img2"]["name"])){
-                            //Datos de Imagen 2:
-                            $nombreImg2 = $_FILES['img2']['name'];
-                            $tipoImg2 = $_FILES['img2']['type'];
-                            $tamanioImg2 = $_FILES['img2']['size'];
-                            $temporalImg2 = $_FILES['img2']['tmp_name'];
-                            
-                            echo 'Intentando subir el archivo: <br>';
-                            echo "- Nombre: $nombreImg2 <br>";
-                            echo '- Tama√±o: '.($tamanioImg2 / 1024).'KB <br>';
-                            echo "- Tipo: $tipoImg2<br>";
-                            echo "- Nombre archivo temporal: $temporalImg2<br>";
-                            
-                            echo '<br>RESULTADO<br>';
-                            
-                            //Intenta subir Imagen 2 (solo si no falla Imagen 1):
-                            if(file_exists('./imgusers/'.pathinfo($nombreImg2, PATHINFO_FILENAME))){
-                                echo "ERROR Imagen 2: El archivo ya existe en el directorio de subidas.<br><br>";
-                                echo "<a href=''>Volver a formulario.</a>";
-                            }else{
-                                $ext = strtolower(pathinfo($nombreImg2, PATHINFO_EXTENSION));
-                                if($ext != "jpg" || $ext != "png"){
-                                    echo "ERROR Imagen 2: El tipo de archivo no es correcto.<br><br>";
-                                    echo "<a href=''>Volver al formulario.</a>";
                                 }else{
-                                    if($tamanioImg2 > 200000){
-                                        echo "ERROR Imagen 2: El tama√±o del archivo supera el m√°ximo permitido.";
-                                        echo "<a href=''>Volver al formulario.</a>";
-                                    }elseif(($tamanioImg2 + $tamanioImg1) > 300000){
-                                        echo "ERROR: No se ha podido subir la segunda imagen porque entre ambas superan el tama√±o m√°ximo permitido de subida simult√°nea.";
-                                        echo "<a href=''>Volver al formulario.</a>";
-                                    }else{
-                                        echo "Subiendo Imagen 2...";
-                                        if(move_uploaded_file($temporalImg2, $directorioSubida.'/'.$nombreImg2) == true){
-                                            echo 'Archivo guardado en: '.$directorioSubida.'/'.$nombreImg2.'<br>';
-                                        }else{
-                                            echo 'ERROR: Archivo no guardado correctamente <br>';
-                                            echo "<a href=''>Volver al formulario.</a>";
-                                        }
-                                    }
+                                    $mensaje .= 'ERROR: No es un directorio correcto o no se tiene permiso de escritura <br />';
                                 }
-                            }
-                        }
-                    }else{
-                        echo "Fallo de permisos de escritura en el directorio. Disculpa las molestias.<br><br>";
-                        echo "<a href=''>Recarga el formulario.</a>";
+                            }            
+                        }        
                     }
+                    echo $mensaje;
+                       
+                    if((isset($_FILES['img2']['name']))){
+                        // InformaciÛn sobre el archivo subido
+                        $nombreImg2 = $_FILES['img2']['name'];
+                        $tipoImg2 = $_FILES['img2']['type'];
+                        $tamanioImg2 = $_FILES['img2']['size'];
+                        $temporalImg2 = $_FILES['img2']['tmp_name'];
+                        $errorImg2 = $_FILES['img2']['error'];
+                        
+                        $mensaje .= '<br><br>Intentando subir Imagen 2: ' . ' <br />';
+                        $mensaje .= "- Nombre: $nombreImg2" . ' <br />';
+                        $mensaje .= '- TamaÒo: ' . ($tamanioImg2 / 1024) . ' KB <br />';
+                        $mensaje .= "- Tipo: $tipoImg2" . ' <br />' ;
+                        $mensaje .= "- Nombre archivo temporal: $temporalImg2" . ' <br />';
+                        $mensaje .= "- CÛdigo de estado: $errorImg2" . ' <br />';
+                        
+                        $mensaje .= '<br />RESULTADO<br />';
+                        
+                        // Obtengo el cÛdigo de error de la operaciÛn, 0 si todo ha ido bien
+                        if($errorImg2 > 0) {
+                            $mensaje .= "Se a producido el error: $errorImg2:"
+                            . $codigosErrorSubida[$errorImg2] . ' <br />';
+                        }else{ 
+                            // subida correcta del temporal
+                            //Compruebo el tipo de archivo y su tamaÒo:
+                            $ext2 = strtolower(pathinfo($nombreImg2, PATHINFO_EXTENSION));
+                            if($ext2 != "jpg" || $ext2 != "png"){
+                                $mensaje .= "ERROR: El archivo de Imagen 2 no es v·lido. <br>";
+                            }else{
+                                if($tamanioImg2 > 200000){
+                                    $mensaje .= "ERROR: El archivo que quieres subir supera el m·ximo individual permitido. <br>";
+                                }elseif(($tamanioImg2 + $tamanioImg1) > 300000){
+                                    $mensaje .= "ERROR: Ambos archivos suman m·s del tamaÒo permitido; la Imagen 2 no se subir·.<br>";
+                                }else{
+                                    // si es un directorio y tengo permisos
+                                    if(is_dir($directorioSubida) && is_writable ($directorioSubida)) {
+                                        //Intento mover el archivo temporal al directorio indicado
+                                        if(move_uploaded_file($temporalImg2,  $directorioSubida .'/'. $nombreImg2) == true) {
+                                            $mensaje .= 'Archivo guardado en: ' . $directorioSubida .'/'. $nombreImg2 . ' <br />';
+                                        }else{
+                                            $mensaje .= 'ERROR: Archivo no guardado correctamente <br />';
+                                        }
+                                    }else{
+                                        $mensaje .= 'ERROR: No es un directorio correcto o no se tiene permiso de escritura <br />';
+                                    }
+                                }                     
+                            }    
+                        }
+                        echo $mensaje;
+                    }                 
+                    echo "<br><a href=''>Volver al formulario.</a>";
                 }
 		    }else{
         		echo "
             		<div id='principal'>
             			<form name='subida' enctype='multipart/form-data' action='' method='POST'>
-            				<h1>Formulario de subida de im√°genes</h1>
+            				<h1>Formulario de subida de im·genes</h1>
             				<p>	
-            					Sube hasta dos im√°genes diferentes. Tienen que ser .JPG o .PNG; 
-            					una imagen no puede ser de m√°s de 200kb y si subes dos, entre ambas no pueden ser de m√°s de 300kb.
+            					Sube hasta dos im·genes diferentes. Tienen que ser .JPG o .PNG; 
+            					una imagen no puede ser de m√°s de 200kb y si subes dos, entre ambas no pueden ser de m·s de 300kb.
             				</p>
             				<br>
-            				<label>Imagen 1: <input type='file' name='img1[]' accept='image/png, image/jpeg'/></label>
+            				<label>Imagen 1: <input type='file' name='img1' accept='image/png, image/jpeg' required /></label>
             				<br><br>
-            				<label>Imagen 2 (opcional): <input type='file' name='img2[]' accept='image/png, image/jpeg'/></label>
+            				<label>Imagen 2 (opcional): <input type='file' name='img2' accept='image/png, image/jpeg'/></label>
             				<br><br>
             				<input type='submit' name='subir' value='Subir'/>
             			</form>
