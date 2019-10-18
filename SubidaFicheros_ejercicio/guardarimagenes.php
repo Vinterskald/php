@@ -13,9 +13,9 @@
 	<body>
 		<?php
             if($_SERVER['REQUEST_METHOD'] == "POST" || isset($_REQUEST["subir"])){
-                if($_FILES["img1"]["size"] == 0){
-                    if($_FILES["img2"]["size"] > 0){
-                        echo "La opción de segunda imagen es opcional; si quieres subir solo una, usa la primera opción.";
+                if(empty($_FILES["img1"]["name"][0])){
+                    if(!empty($_FILES["img2"]["name"][0])){
+                        echo "La opción de segunda imagen es opcional; si quieres subir solo una, usa la primera opción.<br><br>";
                     }else{
                         echo "No has subido ninguna imagen.<br><br>";
                     }       
