@@ -66,7 +66,16 @@
     		      $op = $_REQUEST["operacion"];
     		      $nsis = $_REQUEST["sis"];
     		      //-----------------------------
-    		      /*switch($sis)...*/
+    		      switch($nsis){
+    		          case "Binario":
+    		              $n1 = decbin($n1);
+    		              $n2 = decbin($n2);
+    		              break;
+    		          case "Hexadecimal":
+    		              $n1 = dechex($n1);
+    		              $n2 = dechex($n2);
+    		              break;
+    		      }
     		      switch($op){
     		          case "Sumar":
     		              echo ($n1 + $n2);

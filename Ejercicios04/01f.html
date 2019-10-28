@@ -23,7 +23,7 @@
 			<form name="form3" action="01f.php" method="POST">
 				<label>Número 1: <input type="number" name="num1"/></label>
 				<br>
-				<label>Número 2: <input type="range" name="num2" min="10" max="100"/></label>
+				<label>Número 2: 10<input type="range" name="num2" min="10" max="100"/>100</label>
 				<br>
 				<label>Estaciones:<input list="estaciones"/></label>		
 				<datalist id="estaciones">
@@ -47,9 +47,9 @@
 				<br>
 				<label>Edad (de 0 a 150): <input type="number" name="edad" min="0" max="150"/></label>
 				<br>
-				<label>Página personal: <input type="url"/></label>
+				<label>Página personal: <input type="url" name="direccion"/></label>
 				<br>
-				<label>Horario: De <input type="time"> a <input type="time"/></label>
+				<label>Horario: De <input type="time" name="hora1"> a <input type="time" name="hora2"/></label>
 				<br><br>
 				<input type="submit" name="enviar" value="Enviar consulta">
 			</form>
